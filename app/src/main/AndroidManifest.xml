@@ -12,36 +12,52 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity android:name=".MainActivity">
+
+        </activity>
+<!-- 应用场景 & 对应操作符介绍-->
+        <activity android:name=".EstablishOperator.establishUsage">
+
+        </activity>
+
+<!--联想搜索优化 功能防抖-->
+        <activity android:name=".FilterUsage">
+
+        </activity>
+<!--从磁盘 / 内存缓存中 获取缓存数据-->
+        <activity android:name=".CombineOperator.UsageDemo1">
+
+        </activity>
+        <!--合并数据源 & 统一展示-->
+        <activity android:name=".CombineOperator.UsageDemo2">
+
+        </activity>
+        <!--联合判断(表单提交)-->
+        <activity android:name=".CombineOperator.UsageDemo3">
+
+        </activity>
+        <!--无条件轮询!!!!-->
+        <activity android:name=".EstablishOperator.Demo.RxJavafixRxjava">
+
+        </activity>
+    <!--有条件轮询-->
+    <activity android:name=".FunctionOperator.RxJavafixRetrofit">
+
+    </activity>
+        <!--线程调度-->
+        <activity android:name=".FunctionOperator.RxJavafixRetrofit1">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <activity android:name=".EstablishOperator.establishUsage">
-        </activity>
-        <activity android:name=".EstablishOperator.Demo.RxJavafixRxjava">
-        </activity>
-
-        <activity android:name=".FilterUsage">
-        </activity>
-        <activity android:name=".FunctionOperator.RxJavafixRetrofit">
-        </activity>
-
-        <activity android:name=".CombineOperator.UsageDemo1">
-        </activity>
-        <activity android:name=".CombineOperator.UsageDemo2">
-        </activity>
-        <activity android:name=".CombineOperator.UsageDemo3">
-        </activity>
-
-        <activity android:name=".FunctionOperator.RxJavafixRetrofit1">
-        </activity>
+        <!--出错重试-->
         <activity android:name=".FunctionOperator.RxJavafixRetrofit2">
         </activity>
+        <!---->
         <activity android:name=".SwitchOperator.Demo.RxJavaxRxtrofit3">
         </activity>
+        <!--变换操作符-->
         <activity android:name=".SwitchOperator.SwitchUsage">
         </activity>
        

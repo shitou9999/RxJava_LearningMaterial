@@ -16,40 +16,25 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 
 /**
- * Created by Carson_Ho on 17/9/7.
+ * 联想搜索优化
  */
-
 public class FilterUsage extends AppCompatActivity {
-
     private String TAG = "RxJava";
-
-
-        /*
-         * 联想搜索优化
-         **/
-
-
-    /*
-     * 步骤1：设置控件变量 & 绑定
-     **/
     EditText ed;
     TextView tv;
     Button button;
-
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_filter);
-
-        // 控件绑定
         ed = (EditText) findViewById(R.id.ed);
         tv = (TextView) findViewById(R.id.tv);
 
          /*
          * 说明
-         * 1. 此处采用了RxBinding：RxTextView.textChanges(name) = 对对控件数据变更进行监听（功能类似TextWatcher），需要引入依赖：compile 'com.jakewharton.rxbinding2:rxbinding:2.0.0'
+         * 1. 此处采用了RxBinding：RxTextView.textChanges(name) = 对对控件数据变更进行监听（功能类似TextWatcher），
+         *    需要引入依赖：compile 'com.jakewharton.rxbinding2:rxbinding:2.0.0'
          * 2. 传入EditText控件，输入字符时都会发送数据事件（此处不会马上发送，因为使用了debounce（））
          * 3. 采用skip(1)原因：跳过 第1次请求 = 初始输入框的空字符状态
          **/
@@ -78,13 +63,10 @@ public class FilterUsage extends AppCompatActivity {
                     }
                 });
 
-
-
-
         /*
          * 功能防抖
          **/
-        
+
 //        // 注册控件
 //        button = (Button)findViewById(R.id.button);
 //

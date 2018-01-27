@@ -4,11 +4,19 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.ObservableSource;
 import io.reactivex.Observer;
+import io.reactivex.annotations.NonNull;
 import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Consumer;
+import io.reactivex.functions.Function;
 import io.reactivex.functions.Predicate;
 
 
@@ -20,15 +28,14 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-
+/*
         // 1. 每1s发送1个数据 = 从0开始，递增1，即0、1、2、3
-        Observable.interval(1, TimeUnit.SECONDS)
+        Observable.interval(2, TimeUnit.SECONDS)
                 // 2. 通过takeUntil的Predicate传入判断条件
                 .takeUntil(new Predicate<Long>(){
                     @Override
                     public boolean test( Long integer) throws Exception {
-                        return (integer>3);
+                        return (integer>1);
                         // 返回true时，就停止发送事件
                         // 当发送的数据满足>3时，就停止发送Observable的数据
                     }
@@ -40,6 +47,10 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onNext(Long value) {
                 Log.d(TAG,"发送了事件 "+ value);
+                D/RxJava: 发送了事件 0
+                D/RxJava: 发送了事件 1
+                D/RxJava: 发送了事件 2
+                D/RxJava: 发送了事件onComplete-----
             }
 
             @Override
@@ -48,95 +59,101 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onComplete() {
+                Log.d(TAG,"发送了事件onComplete-----");
             }
         });
+        */
 
+/*
+        // 采用flatMap（）变换操作符
+        Observable.create(new ObservableOnSubscribe<Integer>() {
+            @Override
+            public void subscribe(ObservableEmitter<Integer> emitter) throws Exception {
+                emitter.onNext(1);
+                emitter.onNext(2);
+                emitter.onNext(3);
+            }
+        }).flatMap(new Function<Integer, ObservableSource<String>>() {
+            @Override
+            public ObservableSource<String> apply(Integer integer) throws Exception {
+                final List<String> list = new ArrayList<>();
+                for (int i = 0; i < 3; i++) {
+                    list.add("我是事件 " + integer + "拆分后的子事件" + i);
+                    // 通过flatMap中将被观察者生产的事件序列先进行拆分，再将每个事件转换为一个新的发送三个String事件
+                    // 最终合并，再发送给被观察者
+                }
+                return Observable.fromIterable(list).delay(10, TimeUnit.MILLISECONDS);
+            }
+        }).subscribe(new Consumer<String>() {
+            @Override
+            public void accept(String s) throws Exception {
+                Log.d(TAG, s);
+//                D/RxJava: 我是事件 1拆分后的子事件0
+//                D/RxJava: 我是事件 1拆分后的子事件1
+//                D/RxJava: 我是事件 1拆分后的子事件2
+//                D/RxJava: 我是事件 2拆分后的子事件0
+//                D/RxJava: 我是事件 2拆分后的子事件1
+//                D/RxJava: 我是事件 2拆分后的子事件2
+//                D/RxJava: 我是事件 3拆分后的子事件0
+//                D/RxJava: 我是事件 3拆分后的子事件1
+//                D/RxJava: 我是事件 3拆分后的子事件2
+            }
+        });
+        */
 
+        /*
+        Observable.create(new ObservableOnSubscribe<Integer>() {
+            @Override
+            public void subscribe(ObservableEmitter<Integer> e) throws Exception {
+                e.onNext(1);
+                e.onNext(2);
+                e.onError(new Exception("发生错误了"));
+                e.onNext(3);
+            }
+        }).retryWhen(new Function<Observable<Throwable>, ObservableSource<?>>() {
+                    @Override
+                    public ObservableSource<?> apply(@NonNull Observable<Throwable> throwableObservable) throws Exception {
+                        // 返回新的被观察者 Observable
+                        // 此处有两种情况：
+                            // 1. 原始的Observable不重新发送事件：新的被观察者 Observable发送的事件 = Error事件
+                            // 2. 原始的Observable重新发送事件：新的被观察者 Observable发送的事件 = 数据事件
+                        return throwableObservable.flatMap(new Function<Throwable, ObservableSource<?>>() {
+                            @Override
+                            public ObservableSource<?> apply(@NonNull Throwable throwable) throws Exception {
 
-//        // 采用RxJava基于事件流的链式操作
-//        Observable.create(new ObservableOnSubscribe<Integer>() {
-//            @Override
-//            public void subscribe(ObservableEmitter<Integer> emitter) throws Exception {
-//                emitter.onNext(1);
-//                emitter.onNext(2);
-//                emitter.onNext(3);
-//            }
-//
-//            // 采用flatMap（）变换操作符
-//        }).flatMap(new Function<Integer, ObservableSource<String>>() {
-//            @Override
-//            public ObservableSource<String> apply(Integer integer) throws Exception {
-//                final List<String> list = new ArrayList<>();
-//                for (int i = 0; i < 3; i++) {
-//                    list.add("我是事件 " + integer + "拆分后的子事件" + i);
-//                    // 通过flatMap中将被观察者生产的事件序列先进行拆分，再将每个事件转换为一个新的发送三个String事件
-//                    // 最终合并，再发送给被观察者
-//                }
-//                return Observable.fromIterable(list).delay(10, TimeUnit.MILLISECONDS);
-//            }
-//        }).subscribe(new Consumer<String>() {
-//            @Override
-//            public void accept(String s) throws Exception {
-//                Log.d(TAG, s);
-//            }
-//        });
+                                // 1. 若返回的Observable发送的事件 = Error事件，则原始的Observable不重新发送事件
+                                // 该异常错误信息可在观察者中的onError（）中获得
+                                 return Observable.error(new Throwable("retryWhen终止啦"));
 
-
-
-//        Observable.create(new ObservableOnSubscribe<Integer>() {
-//            @Override
-//            public void subscribe(ObservableEmitter<Integer> e) throws Exception {
-//                e.onNext(1);
-//                e.onNext(2);
-//                e.onError(new Exception("发生错误了"));
-//                e.onNext(3);
-//            }
-//        })
-//                .retryWhen(new Function<Observable<Throwable>, ObservableSource<?>>() {
-//                    @Override
-//                    public ObservableSource<?> apply(@NonNull Observable<Throwable> throwableObservable) throws Exception {
-//
-//                        // 返回新的被观察者 Observable
-//                        // 此处有两种情况：
-//                            // 1. 原始的Observable不重新发送事件：新的被观察者 Observable发送的事件 = Error事件
-//                            // 2. 原始的Observable重新发送事件：新的被观察者 Observable发送的事件 = 数据事件
-//                        return throwableObservable.flatMap(new Function<Throwable, ObservableSource<?>>() {
-//                            @Override
-//                            public ObservableSource<?> apply(@NonNull Throwable throwable) throws Exception {
-//
-//                                // 1. 若返回的Observable发送的事件 = Error事件，则原始的Observable不重新发送事件
-//                                // 该异常错误信息可在观察者中的onError（）中获得
-//                                 // return Observable.error(new Throwable("retryWhen终止啦"));
-//
-//                                // 2. 若返回的Observable发送的事件 = 数据事件，则原始的Observable重新发送事件（若持续遇到错误，则持续重试）
+                                // 2. 若返回的Observable发送的事件 = 数据事件，则原始的Observable重新发送事件（若持续遇到错误，则持续重试）
 //                                  return Observable.just(1);
-//                            }
-//                        });
-//
-//                    }
-//                })
-//                .subscribe(new Observer<Integer>() {
-//                    @Override
-//                    public void onSubscribe(Disposable d) {
-//
-//                    }
-//                    @Override
-//                    public void onNext(Integer value) {
-//                        Log.d(TAG, "接收到了事件"+ value  );
-//                    }
-//
-//                    @Override
-//                    public void onError(Throwable e) {
-//                        Log.d(TAG, "对Error事件作出响应" + e.toString());
-//                        // 获取异常错误信息
-//                    }
-//
-//                    @Override
-//                    public void onComplete() {
-//                        Log.d(TAG, "对Complete事件作出响应");
-//                    }
-//                });
+                            }
+                        });
 
+                    }
+                })
+                .subscribe(new Observer<Integer>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+
+                    }
+                    @Override
+                    public void onNext(Integer value) {
+                        Log.d(TAG, "接收到了事件"+ value  );
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Log.d(TAG, "对Error事件作出响应" + e.toString());
+                        // 获取异常错误信息
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        Log.d(TAG, "对Complete事件作出响应");
+                    }
+                });
+*/
 
 
 //            Observable.combineLatest(
@@ -164,11 +181,11 @@ public class MainActivity extends AppCompatActivity {
 //                Observable.create(new ObservableOnSubscribe<Integer>() {
 //                    @Override
 //                    public void subscribe(ObservableEmitter<Integer> emitter) throws Exception {
-//
 //                        emitter.onNext(1);
 //                        emitter.onNext(2);
 //                        emitter.onNext(3);
-//                        emitter.onError(new NullPointerException()); // 发送Error事件，因为使用了concatDelayError，所以第2个Observable将会发送事件，等发送完毕后，再发送错误事件
+ // 发送Error事件，因为使用了concatDelayError，所以第2个Observable将会发送事件，等发送完毕后，再发送错误事件
+//                        emitter.onError(new NullPointerException());
 //                        emitter.onComplete();
 //                    }
 //                }),
@@ -195,7 +212,7 @@ public class MainActivity extends AppCompatActivity {
 //                });
 
         // 在一个被观察者发送事件前，追加发送被观察者 & 发送数据
-        // 注：追加数据顺序 = 后调用先追加
+        // 注：追加数据顺序 = 后调用先追加！！！！！！！！！！！！！！！！
 //        Observable.just(4, 5, 6)
 //                .startWith(Observable.just(1, 2, 3))
 //                .subscribe(new Observer<Integer>() {
@@ -221,12 +238,9 @@ public class MainActivity extends AppCompatActivity {
 //                });
 
 
-
-
-
 //        // 使用2：获取位置索引大于发送事件序列时，设置默认参数
 //        Observable.just(1, 2, 3, 4, 5)
-//                .elementAt(6,10)
+//                .elementAt(6,100)
 //                .subscribe(new Consumer<Integer>() {
 //                    @Override
 //                    public void accept( Integer integer) throws Exception {
@@ -258,7 +272,6 @@ public class MainActivity extends AppCompatActivity {
 //                    public void onSubscribe(Disposable d) {
 //                        Log.d(TAG, "开始采用subscribe连接");
 //                    }
-//                    // 默认最先调用复写的 onSubscribe（）
 //
 //                    @Override
 //                    public void onNext(Long value) {
@@ -290,7 +303,6 @@ public class MainActivity extends AppCompatActivity {
 //                    public void onSubscribe(Disposable d) {
 //                        Log.d(TAG, "开始采用subscribe连接");
 //                    }
-//                    // 默认最先调用复写的 onSubscribe（）
 //
 //                    @Override
 //                    public void onNext(Integer value) {
@@ -456,45 +468,6 @@ public class MainActivity extends AppCompatActivity {
 //                    }
 //                });
 
-//
-//// 1. 通过creat（）创建被观察者对象
-//        Observable.create(new ObservableOnSubscribe<Integer>() {
-//            // 2. 在复写的subscribe（）里定义需要发送的事件
-//            @Override
-//            public void subscribe(ObservableEmitter<Integer> emitter) throws Exception {
-//                emitter.onNext(1);
-//                emitter.onNext(2);
-//                emitter.onNext(3);
-//                emitter.onNext(4);
-//
-//                emitter.onComplete();
-//            }  // 至此，一个被观察者对象（Observable）就创建完毕
-//        }).subscribe(new Observer<Integer>() {
-//            // 以下步骤仅为展示一个完整demo，可以忽略
-//            // 3. 通过通过订阅（subscribe）连接观察者和被观察者
-//            // 4. 创建观察者 & 定义响应事件的行为
-//            @Override
-//            public void onSubscribe(Disposable d) {
-//                Log.d(TAG, "开始采用subscribe连接");
-//            }
-//            // 默认最先调用复写的 onSubscribe（）
-//
-//            @Override
-//            public void onNext(Integer value) {
-//                Log.d(TAG, "接收到了事件"+ value  );
-//            }
-//
-//            @Override
-//            public void onError(Throwable e) {
-//                Log.d(TAG, "对Error事件作出响应");
-//            }
-//
-//            @Override
-//            public void onComplete() {
-//                Log.d(TAG, "对Complete事件作出响应");
-//            }
-//
-//        });
 }
 
 

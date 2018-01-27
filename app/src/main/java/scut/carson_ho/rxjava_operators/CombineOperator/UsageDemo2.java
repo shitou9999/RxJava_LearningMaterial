@@ -38,6 +38,7 @@ public class UsageDemo2 extends AppCompatActivity {
          **/
         Observable<String> file = Observable.just("本地文件");
 
+
         /*
          * 通过merge（）合并事件 & 同时发送事件
          **/
@@ -52,6 +53,11 @@ public class UsageDemo2 extends AppCompatActivity {
                     public void onNext(String value) {
                         Log.d(TAG, "数据源有： "+ value  );
                         result += value + "+";
+
+//                        D/RxJava: 数据源有： 网络
+//                        D/RxJava: 数据源有： 本地文件
+//                        D/RxJava: 获取数据完成
+//                        D/RxJava: 数据源来自 = 网络+本地文件+
                     }
 
                     @Override

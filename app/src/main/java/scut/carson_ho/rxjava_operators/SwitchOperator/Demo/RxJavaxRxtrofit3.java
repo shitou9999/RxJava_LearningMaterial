@@ -17,7 +17,8 @@ import retrofit2.converter.gson.GsonConverterFactory;
 import scut.carson_ho.rxjava_operators.R;
 
 /**
- * Created by Carson_Ho on 17/9/12.
+ *  需要进行嵌套网络请求：即在第1个网络请求成功后，继续再进行一次网络请求
+ *  如先进行 用户注册 的网络请求, 待注册成功后回再继续发送 用户登录 的网络请求
  */
 
 public class RxJavaxRxtrofit3 extends AppCompatActivity {
@@ -47,7 +48,6 @@ public class RxJavaxRxtrofit3 extends AppCompatActivity {
         observable1 = request.getCall();
         observable2 = request.getCall_2();
 
-
         observable1.subscribeOn(Schedulers.io())               // （初始被观察者）切换到IO线程进行网络请求1
                 .observeOn(AndroidSchedulers.mainThread())  // （新观察者）切换到主线程 处理网络请求1的结果
                 .doOnNext(new Consumer<Translation1>() {
@@ -57,18 +57,17 @@ public class RxJavaxRxtrofit3 extends AppCompatActivity {
                         result.show(); // 对第1次网络请求返回的结果进行操作 = 显示翻译结果
                     }
                 })
-
                 .observeOn(Schedulers.io())                 // （新被观察者，同时也是新观察者）切换到IO线程去发起登录请求
                 // 特别注意：因为flatMap是对初始被观察者作变换，所以对于旧被观察者，它是新观察者，所以通过observeOn切换线程
                 // 但对于初始观察者，它则是新的被观察者
-                .flatMap(new Function<Translation1, ObservableSource<Translation2>>() { // 作变换，即作嵌套网络请求
+                /**作变换，即作嵌套网络请求*/
+                .flatMap(new Function<Translation1, ObservableSource<Translation2>>() {
                     @Override
                     public ObservableSource<Translation2> apply(Translation1 result) throws Exception {
                         // 将网络请求1转换成网络请求2，即发送网络请求2
                         return observable2;
                     }
                 })
-
                 .observeOn(AndroidSchedulers.mainThread())  // （初始观察者）切换到主线程 处理网络请求2的结果
                 .subscribe(new Consumer<Translation2>() {
                     @Override

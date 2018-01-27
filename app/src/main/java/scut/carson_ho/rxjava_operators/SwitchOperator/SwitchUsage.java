@@ -18,7 +18,7 @@ import io.reactivex.functions.Function;
 import scut.carson_ho.rxjava_operators.R;
 
 /**
- * Created by Carson_Ho on 17/9/12.
+ * 变换操作符
  */
 
 public class SwitchUsage extends AppCompatActivity {
@@ -30,12 +30,9 @@ public class SwitchUsage extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_combine);
-
-
         /**
          * Buffer（）
          */
-
         // 被观察者 需要发送5个数字
         Observable.just(1, 2, 3, 4, 5)
                 .buffer(3, 1) // 设置缓存区大小 & 步长
@@ -46,10 +43,10 @@ public class SwitchUsage extends AppCompatActivity {
                     public void onSubscribe(Disposable d) {
 
                     }
+
                     @Override
                     public void onNext(List<Integer> stringList) {
-                        //
-                        Log.d(TAG, " 缓存区里的事件数量 = " +  stringList.size());
+                        Log.d(TAG, " 缓存区里的事件数量 = " + stringList.size());
                         for (Integer value : stringList) {
                             Log.d(TAG, " 事件 = " + value);
                         }
@@ -57,7 +54,7 @@ public class SwitchUsage extends AppCompatActivity {
 
                     @Override
                     public void onError(Throwable e) {
-                        Log.d(TAG, "对Error事件作出响应" );
+                        Log.d(TAG, "对Error事件作出响应");
                     }
 
                     @Override
@@ -70,8 +67,6 @@ public class SwitchUsage extends AppCompatActivity {
         /**
          * ConcatMap（）
          */
-
-        // 采用RxJava基于事件流的链式操作
         Observable.create(new ObservableOnSubscribe<Integer>() {
             @Override
             public void subscribe(ObservableEmitter<Integer> emitter) throws Exception {
@@ -79,8 +74,6 @@ public class SwitchUsage extends AppCompatActivity {
                 emitter.onNext(2);
                 emitter.onNext(3);
             }
-
-            // 采用concatMap（）变换操作符
         }).concatMap(new Function<Integer, ObservableSource<String>>() {
             @Override
             public ObservableSource<String> apply(Integer integer) throws Exception {
@@ -102,7 +95,6 @@ public class SwitchUsage extends AppCompatActivity {
         /**
          * FlatMap（）
          */
-        // 采用RxJava基于事件流的链式操作
         Observable.create(new ObservableOnSubscribe<Integer>() {
             @Override
             public void subscribe(ObservableEmitter<Integer> emitter) throws Exception {
@@ -110,8 +102,6 @@ public class SwitchUsage extends AppCompatActivity {
                 emitter.onNext(2);
                 emitter.onNext(3);
             }
-
-            // 采用flatMap（）变换操作符
         }).flatMap(new Function<Integer, ObservableSource<String>>() {
             @Override
             public ObservableSource<String> apply(Integer integer) throws Exception {
@@ -133,24 +123,20 @@ public class SwitchUsage extends AppCompatActivity {
 
         /**
          * Map（）
+         * 2. 使用Map变换操作符中的Function函数对被观察者发送的事件进行统一变换：整型变换成字符串类型
          */
-
-        // 采用RxJava基于事件流的链式操作
         Observable.create(new ObservableOnSubscribe<Integer>() {
-
             // 1. 被观察者发送事件 = 参数为整型 = 1、2、3
             @Override
             public void subscribe(ObservableEmitter<Integer> emitter) throws Exception {
                 emitter.onNext(1);
                 emitter.onNext(2);
                 emitter.onNext(3);
-
             }
-            // 2. 使用Map变换操作符中的Function函数对被观察者发送的事件进行统一变换：整型变换成字符串类型
         }).map(new Function<Integer, String>() {
             @Override
             public String apply(Integer integer) throws Exception {
-                return "使用 Map变换操作符 将事件" + integer +"的参数从 整型"+integer + " 变换成 字符串类型" + integer ;
+                return "使用 Map变换操作符 将事件" + integer + "的参数从 整型" + integer + " 变换成 字符串类型" + integer;
             }
         }).subscribe(new Consumer<String>() {
 
